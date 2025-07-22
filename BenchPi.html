@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>BenchFox - Benchmark Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --purple: #7d5fff;
+      --deep-purple: #5f27cd;
+      --light-bg: #f7f7fa;
+      --dark-bg: #17112b;
+      --box-light: #fff;
+      --box-dark: #201b3c;
+      --text-light: #222;
+      --text-dark: #f2f1f7;
+    }
+    body[data-theme='light'] {
+      background: var(--light-bg);
+      color: var(--text-light);
+    }
+    body[data-theme='dark'] {
+      background: var(--dark-bg);
+      color: var(--text-dark);
+    }
+    .container {
+      background: rgba(110, 44, 175, 0.09);
+      box-shadow: 0 6px 32px rgba(66,0,128,0.10);
+      border-radius: 18px;
+      max-width: 430px;
+      margin: 50px auto;
+      padding: 40px 32px;
+      transition: background .3s;
+    }
+    body[data-theme='light'] .container {
+      background: var(--box-light);
+    }
+    body[data-theme='dark'] .container {
+      background: var(--box-dark);
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.05rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #a685e2 10%, #7d5fff 85%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .lang-theme-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    select, button.theme-toggle {
+      padding: 7px 12px;
+      border-radius: 7px;
+      border: 1px solid #ccc;
+      background: #ede7fa;
+      font-weight: 500;
+      cursor: pointer;
+      outline: none;
+      margin-left: 3px;
+      margin-right: 3px;
+      color: #45287c;
+    }
+    button.theme-toggle {
+      background: #7d5fff;
+      color: #fff;
+      border: none;
+      transition: background 0.2s;
+    }
+    button.theme-toggle:hover {
+      background: #a685e2;
+    }
+    .desc {
+      opacity: 0.8;
+      font-size: 1.07rem;
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+    .run-btn {
+      background-color: #9400d3;
+      color: #fff;
+      padding: 15px 42px;
+      border: none;
+      border-radius: 9px;
+      font-size: 1.14rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(71,0,115,0.14);
+      margin: 18px 0 0 0;
+    }
+    .run-btn:hover {
+      background-color: #a674dc;
+    }
+    #result {
+      margin-top: 23px;
+      font-size: 1.19rem;
+      min-height: 32px;
+      padding: 13px;
+      border-radius: 6px;
+      background: rgba(155,118,255,0.09);
+    }
+    .explain {
+      margin-top: 14px;
+      padding: 12px 11px;
+      border-radius: 6px;
+      font-size: 0.99rem;
+      background: rgba(220,203,255,0.19);
+      color: #5d3aa7;
+    }
+    body[data-theme='dark'] .explain {
+      background: rgba(130,100,222,0.17);
+      color: #e0c3fc;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="container">
+    <div class="lang-theme-bar">
+      <select id="langSelect">
+        <option value="tr">Türkçe</option>
+        <option value="en">English</option>
+      </select>
+      <button class="theme-toggle" id="themeBtn">🌙</button>
+    </div>
+    <h1 id="title">BenchFox Benchmark Testi</h1>
+    <p class="desc" id="desc">Tarayıcınızın hızını sınamak için testi başlatın.</p>
+    <button class="run-btn" id="startBtn">Testi Başlat</button>
+    <div id="result"></div>
+    <div class="explain" id="explain">
+      Bu test, bilgisayarınızın/cihazınızın tarayıcıda karmaşık matematiksel hesaplamaları ne kadar hızlı yaptığını ölçer. Test sonunda çıkan süre düşükse, sisteminiz daha hızlı demektir. Farklı cihaz ve tarayıcıları karşılaştırmak için idealdir.
+    </div>
+  </div>
+  <script>
+    const LANG = {
+      tr: {
+        title: "BenchFox Benchmark Testi",
+        desc: "Tarayıcınızın hızını sınamak için testi başlatın.",
+        start: "Testi Başlat",
+        running: "Test çalışıyor...",
+        done: ms => `Test tamamlandı! Süre: <b>${ms}</b> ms`,
+        explain: `Bu test, bilgisayarınızın/cihazınızın tarayıcıda karmaşık matematiksel hesaplamaları ne kadar hızlı yaptığını ölçer. Test sonunda çıkan süre <b>düşükse</b>, sisteminiz daha hızlı demektir. Farklı cihaz ve tarayıcıları karşılaştırmak için idealdir.`,
+        themeLight: "🌞",
+        themeDark: "🌙"
+      },
+      en: {
+        title: "BenchFox Benchmark Test",
+        desc: "Start the test to measure your browser's speed.",
+        start: "Start Test",
+        running: "Test running...",
+        done: ms => `Test completed! Time: <b>${ms}</b> ms`,
+        explain: `This test measures how fast your device/browser can process complex mathematical calculations. If the final time is <b>lower</b>, your system is performing better. Perfect for comparing browsers and devices.`,
+        themeLight: "🌞",
+        themeDark: "🌙"
+      }
+    };
+    let lang = 'tr';
+    let theme = 'dark';
+    function setLocale() {
+      document.getElementById('title').textContent = LANG[lang].title;
+      document.getElementById('desc').textContent = LANG[lang].desc;
+      document.getElementById('startBtn').textContent = LANG[lang].start;
+      document.getElementById('explain').innerHTML = LANG[lang].explain;
+      document.getElementById('themeBtn').textContent =
+        theme === 'light' ? LANG[lang].themeDark : LANG[lang].themeLight;
+    }
+    setLocale();
+
+    document.getElementById('langSelect').addEventListener('change', function() {
+      lang = this.value;
+      setLocale();
+    });
+
+    document.getElementById('themeBtn').addEventListener('click', function() {
+      theme = theme === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', theme);
+      setLocale();
+    });
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      const resultElement = document.getElementById('result');
+      resultElement.innerHTML = LANG[lang].running;
+
+      // Uzun benchmark: Daha yüksek iterasyon + Pi hesaplaması
+      const iterations = 50_000_000; // Daha uzun test
+      let total = 0;
+      const start = performance.now();
+      for(let i=1; i<=iterations; i++) {
+        // Biraz Pi hesabı, biraz sinüs-kök
+        total += 4 * ((i % 2 === 1 ? 1 : -1) / (2*i - 1));
+        total += Math.sqrt(i) * Math.sin(i);
+      }
+      const end = performance.now();
+      const duration = (end - start).toFixed(0);
+      resultElement.innerHTML = LANG[lang].done(duration);
+    });
+  </script>
+</body>
+</html>
